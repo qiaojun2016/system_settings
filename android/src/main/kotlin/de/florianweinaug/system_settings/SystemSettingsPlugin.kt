@@ -104,6 +104,12 @@ public class SystemSettingsPlugin : MethodCallHandler, FlutterPlugin, ActivityAw
     }
 
     private fun openSystemSettings() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (!Settings.canDrawOverlays(mPluginBinding.applicationContext)) {
+                mPluginBinding.applicationContext.startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
+                return;
+            }
+        }
         val intent = Intent(Settings.ACTION_SETTINGS);
         mPluginBinding.applicationContext.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         Handler(Looper.getMainLooper()).postDelayed(Runnable {
@@ -111,6 +117,7 @@ public class SystemSettingsPlugin : MethodCallHandler, FlutterPlugin, ActivityAw
         }, 420);
 
     }
+
     private fun showFloatView() {
         val windowManager =
             mPluginBinding.applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager;
@@ -118,7 +125,7 @@ public class SystemSettingsPlugin : MethodCallHandler, FlutterPlugin, ActivityAw
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             lp.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         } else {
-            lp.type = WindowManager.LayoutParams.TYPE_PHONE;
+            lp.type = WindowManager.LayoutParams.TYPE_SYSTEM_ALERT;
         }
         with(lp) {
             gravity = Gravity.RIGHT or Gravity.BOTTOM;
